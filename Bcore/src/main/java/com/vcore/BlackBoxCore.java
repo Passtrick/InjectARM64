@@ -120,6 +120,10 @@ public class BlackBoxCore extends ClientConfiguration {
             HiddenApiBypass.addHiddenApiExemptions("L");
         }
 
+        if (Build.VERSION.SDK_INT >= 33) {
+             HiddenApiBypass.addHiddenApiExemptions("");
+        }
+
         sContext = context;
         mClientConfiguration = clientConfiguration;
         initNotificationManager();
