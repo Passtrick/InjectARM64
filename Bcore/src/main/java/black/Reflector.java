@@ -100,6 +100,7 @@ public class Reflector {
     }
 
     public static Method findMethodNoChecks(Class<?> clazz, String name, Class<?>... parameterTypes) {
+        if (clazz == null) return null;
         while (clazz != null) {
             try {
                 Method method = clazz.getDeclaredMethod(name, parameterTypes);
@@ -109,9 +110,11 @@ public class Reflector {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     try {
                         Method method = HiddenApiBypass.getDeclaredMethod(clazz, name, parameterTypes);
-                        method.setAccessible(true);
-                        return method;
-                    } catch (Exception ignored) { }
+                        if (method != null) {
+                            method.setAccessible(true);
+                            return method;
+                        }
+                    } catch (Throwable ignored) { }
                 }
             }
             clazz = clazz.getSuperclass();
@@ -120,23 +123,30 @@ public class Reflector {
     }
 
     public static Method findMethodNoChecks(Class<?> clazz, String name) {
+        if (clazz == null) return null;
         try {
             Method[] methods = clazz.getDeclaredMethods();
-            for (Method method : methods) {
-                if (method.getName().equals(name)) {
-                    method.setAccessible(true);
-                    return method;
-                }
-            }
-        } catch (Throwable e) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                List<Method> methods = HiddenApiBypass.getDeclaredMethods(clazz);
+            if (methods != null) {
                 for (Method method : methods) {
-                    if (method.getName().equals(name)) {
+                    if (method != null && method.getName().equals(name)) {
                         method.setAccessible(true);
                         return method;
                     }
                 }
+            }
+        } catch (Throwable e) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                try {
+                    List<Method> methods = HiddenApiBypass.getDeclaredMethods(clazz);
+                    if (methods != null) {
+                        for (Method method : methods) {
+                            if (method != null && method.getName().equals(name)) {
+                                method.setAccessible(true);
+                                return method;
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) { }
             }
         }
         return null;
@@ -180,6 +190,7 @@ public class Reflector {
     }
 
     public static <T> Constructor<T> findConstructorNoChecks(Class<?> clazz, Class<?>... parameterTypes) {
+        if (clazz == null) return null;
         try {
             Constructor<T> constructor = (Constructor<T>) clazz.getDeclaredConstructor(parameterTypes);
             constructor.setAccessible(true);
@@ -188,36 +199,48 @@ public class Reflector {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 try {
                     Constructor<T> constructor = (Constructor<T>) HiddenApiBypass.getDeclaredConstructor(clazz, parameterTypes);
-                    constructor.setAccessible(true);
-                    return constructor;
-                } catch (Exception ignored) { }
+                    if (constructor != null) {
+                        constructor.setAccessible(true);
+                        return constructor;
+                    }
+                } catch (Throwable ignored) { }
             }
         }
         return null;
     }
 
     private static Field findInstanceField(Class<?> clazz, String name) throws NoSuchFieldException {
+        if (clazz == null) throw new NoSuchFieldException();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            List<Field> fields = HiddenApiBypass.getInstanceFields(clazz);
-            for (Field field : fields) {
-                if (field.getName().equals(name)) {
-                    field.setAccessible(true);
-                    return field;
+            try {
+                List<Field> fields = HiddenApiBypass.getInstanceFields(clazz);
+                if (fields != null) {
+                    for (Field field : fields) {
+                        if (field != null && field.getName().equals(name)) {
+                            field.setAccessible(true);
+                            return field;
+                        }
+                    }
                 }
-            }
+            } catch (Throwable ignored) { }
         }
         throw new NoSuchFieldException();
     }
 
     private static Field findStaticField(Class<?> clazz, String name) throws NoSuchFieldException {
+        if (clazz == null) throw new NoSuchFieldException();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            List<Field> fields = HiddenApiBypass.getStaticFields(clazz);
-            for (Field field : fields) {
-                if (field.getName().equals(name)) {
-                    field.setAccessible(true);
-                    return field;
+            try {
+                List<Field> fields = HiddenApiBypass.getStaticFields(clazz);
+                if (fields != null) {
+                    for (Field field : fields) {
+                        if (field != null && field.getName().equals(name)) {
+                            field.setAccessible(true);
+                            return field;
+                        }
+                    }
                 }
-            }
+            } catch (Throwable ignored) { }
         }
         throw new NoSuchFieldException();
     }
