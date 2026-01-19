@@ -104,9 +104,11 @@ public class Reflector {
         while (clazz != null) {
             try {
                 Method method = clazz.getDeclaredMethod(name, parameterTypes);
-                method.setAccessible(true);
-                return method;
-            } catch (NoSuchMethodException e) {
+                if (method != null) {
+                    method.setAccessible(true);
+                    return method;
+                }
+            } catch (Throwable e) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     try {
                         Method method = HiddenApiBypass.getDeclaredMethod(clazz, name, parameterTypes);
@@ -273,8 +275,12 @@ public class Reflector {
                 return;
             }
 
-            member.setAccessible(true);
-            this.member = member;
+            try {
+                member.setAccessible(true);
+                this.member = member;
+            } catch (Throwable e) {
+                Log.e(TAG, "Failed to set accessible: " + member, e);
+            }
         }
     }
 
@@ -284,6 +290,10 @@ public class Reflector {
         }
 
         public T call(Object instance, Object... args) {
+            if (member == null) {
+                Log.w("Reflector", "MethodWrapper.call: member is null");
+                return null;
+            }
             try {
                 return (T) member.invoke(instance, args);
             } catch (Throwable e) {
@@ -299,6 +309,10 @@ public class Reflector {
         }
 
         public T call(Object... args) {
+            if (member == null) {
+                Log.w("Reflector", "StaticMethodWrapper.call: member is null");
+                return null;
+            }
             try {
                 return (T) member.invoke(null, args);
             } catch (Throwable e) {
@@ -308,6 +322,10 @@ public class Reflector {
         }
 
         public <R> R callWithClass(Object... args) {
+            if (member == null) {
+                Log.w("Reflector", "StaticMethodWrapper.callWithClass: member is null");
+                return null;
+            }
             try {
                 return (R) member.invoke(null, args);
             } catch (Throwable e) {
@@ -323,6 +341,10 @@ public class Reflector {
         }
 
         public T get(Object instance) {
+            if (member == null) {
+                Log.w("Reflector", "FieldWrapper.get: member is null");
+                return null;
+            }
             try {
                 return (T) member.get(instance);
             } catch (Throwable e) {
@@ -336,6 +358,10 @@ public class Reflector {
         }
 
         public void set(Object instance, Object value) {
+            if (member == null) {
+                Log.w("Reflector", "FieldWrapper.set: member is null");
+                return;
+            }
             try {
                 member.set(instance, value);
             } catch (Throwable e) {
@@ -354,6 +380,10 @@ public class Reflector {
         }
 
         public T newInstance(Object... args) {
+            if (member == null) {
+                Log.w("Reflector", "ConstructorWrapper.newInstance: member is null");
+                return null;
+            }
             try {
                 return member.newInstance(args);
             } catch (Throwable e) {
